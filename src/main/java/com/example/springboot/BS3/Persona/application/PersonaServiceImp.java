@@ -4,8 +4,9 @@ import com.example.springboot.BS3.Errores.PersonNotFoundException;
 import com.example.springboot.BS3.Errores.UnprocesableException;
 import com.example.springboot.BS3.Persona.domain.Persona;
 import com.example.springboot.BS3.Persona.infrastructure.Controller.DTO.input.PersonainputDTO;
+import com.example.springboot.BS3.Persona.infrastructure.Controller.DTO.output.ListPersonaOutputDTO;
 import com.example.springboot.BS3.Persona.infrastructure.Controller.DTO.output.PersonaOutputDTO;
-import com.example.springboot.BS3.Persona.infrastructure.Repository.PersonaRepo;
+import com.example.springboot.BS3.Persona.infrastructure.Repository.PersonaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,21 +14,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
 public class PersonaServiceImp implements IPersona {
 
     @Autowired
-    PersonaRepo personaRepo;
+    PersonaRepository personaRepo;
+
 
     @Override
     public PersonaOutputDTO addPerson(PersonainputDTO personainputDTO) throws Exception {
             this.validar(personainputDTO);
             Persona persona= convertInputtoEntity(personainputDTO);
             personaRepo.save(persona);
-            return convertToDTO(persona);
+            return this.convertToDTO(persona);
     }
 
     @Override
@@ -44,7 +48,7 @@ public class PersonaServiceImp implements IPersona {
         persona.setCreated_date(personainputDTO.created_date());
         persona.setTermination_date(personainputDTO.termination_date());
         personaRepo.save(persona);
-        return convertToDTO(persona);
+        return this.convertToDTO(persona);
     }
 
     @Override
@@ -60,9 +64,30 @@ public class PersonaServiceImp implements IPersona {
         List<PersonaOutputDTO> personaOutputDTOList= new ArrayList<>();
         Slice<Persona> personas= personaRepo.findAll(firstPage);
         for (Persona persona: personas){
-           personaOutputDTOList.add(this.convertToDTO(persona));
+           personaOutputDTOList.add(convertToDTO(persona));
         }
         return personaOutputDTOList;
+    }
+
+    public List<PersonaOutputDTO> findUsuario(String usuario){
+        List<Persona> personas= personaRepo.findByUsuario(usuario);
+        List<PersonaOutputDTO> personaOutputDTOList= new ArrayList<>();
+        for(Persona persona:personas){
+            personaOutputDTOList.add(convertToDTO(persona));
+        }
+        return personaOutputDTOList;
+    }
+
+    @Override
+    public ListPersonaOutputDTO searchPerson(HashMap<String, Object> conditions,int page) {
+        List<PersonaOutputDTO> personaOutputDTOList= new ArrayList<>();
+        List<Persona> personas=personaRepo.getData(conditions,page);
+        for (Persona persona:personas){
+            personaOutputDTOList.add(convertToDTO(persona));
+        }
+        ListPersonaOutputDTO lista= new ListPersonaOutputDTO(personaOutputDTOList);
+
+        return lista;
     }
 
     @Override
@@ -74,9 +99,9 @@ public class PersonaServiceImp implements IPersona {
     private void validar(PersonainputDTO personainputDTO) throws UnprocesableException{
         String usuario= personainputDTO.usuario();
 
-        if (usuario==null) throw new UnprocesableException("Error: Usuario no puede ser nulo");
-        if (usuario.length()>10 || usuario.length()<6) throw new UnprocesableException("Error: El usuario debe tener entre 6 y 10 caracteres");;
-        if (personainputDTO.password()==null) throw new UnprocesableException("Error: Se debe introducir una contraseña");
+        if (usuario==null) throw new UnprocesableException("El usuario no puede ser nulo");
+        if (usuario.length()>10 || usuario.length()<6) throw new UnprocesableException("El usuario debe tener entre 6 y 10 caracteres");;
+        if (personainputDTO.password()==null) throw new UnprocesableException("Se debe introducir una contraseña");
         if (personainputDTO.created_date()==null) throw new UnprocesableException("Debe introducir una fecha");
     }
 

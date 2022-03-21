@@ -37,6 +37,7 @@ public class Persona {
     @Column(nullable = false)
     private boolean active;
     @Column(nullable = false)
+    @Temporal(TemporalType.DATE)
     private Date created_date;
     private String imagen_url;
     private Date termination_date;

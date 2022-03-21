@@ -12,15 +12,15 @@ import java.util.Date;
 public class CustomExceptions extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(PersonNotFoundException.class)
-    public final ResponseEntity<CustomError> handeleNotFoundException(){
-        CustomError customError=new CustomError(new Date(), HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase());
+    public final ResponseEntity<CustomError> handeleNotFoundException(PersonNotFoundException p){
+        CustomError customError=new CustomError(new Date(), HttpStatus.NOT_FOUND.value(), p.getMessage());
 
         return new ResponseEntity<CustomError>(customError,HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(UnprocesableException.class)
-    public final ResponseEntity<CustomError> handleUnprocesableException(){
-        CustomError customError=new CustomError(new Date(), HttpStatus.UNPROCESSABLE_ENTITY.value(), HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase());
+    public final ResponseEntity<CustomError> handleUnprocesableException(UnprocesableException u){
+        CustomError customError=new CustomError(new Date(), HttpStatus.UNPROCESSABLE_ENTITY.value(), u.getMessage());
         return new ResponseEntity<CustomError>(customError,HttpStatus.UNPROCESSABLE_ENTITY);
     }
 }
